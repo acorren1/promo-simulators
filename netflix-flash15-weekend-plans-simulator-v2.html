@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>Weekend Plans — Streaming Promo Simulator v2</title>
+  <style>
+    :root{
+      --red:#e50914;
+      --bg:#050505;
+      --text:#fff;
+      --muted:#b3b3b3;
+      --green:#46d369;
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;width:100%;height:100%;overflow:hidden;background:#000;
+      font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+      color:var(--text);
+    }
+    .phone{
+      width:100%;height:100%;max-width:520px;margin:0 auto;position:relative;
+      overflow:hidden;background:var(--bg);
+    }
+
+    .status{
+      position:absolute;inset:0 0 auto 0;height:44px;padding:8px 17px 0;
+      display:flex;align-items:center;justify-content:space-between;
+      font-size:16px;font-weight:600;z-index:30;color:#fff;
+    }
+    .status-right{display:flex;align-items:center;gap:7px}
+    .status svg{display:block}
+
+    .app{
+      position:absolute;inset:0;background:
+      linear-gradient(180deg,rgba(0,0,0,.22),rgba(0,0,0,.84) 65%,#050505 100%),
+      radial-gradient(circle at 65% 22%,rgba(110,0,0,.35),transparent 34%),
+      linear-gradient(135deg,#1b1b1b,#050505);
+    }
+
+    .topbar{
+      position:absolute;top:44px;left:0;right:0;height:58px;padding:0 16px;
+      display:flex;align-items:center;justify-content:space-between;z-index:12;
+      background:linear-gradient(180deg,rgba(0,0,0,.9),rgba(0,0,0,0));
+    }
+    .logo{font-weight:900;font-size:27px;letter-spacing:-1.6px;color:var(--red)}
+    .profile{
+      width:28px;height:28px;border-radius:4px;background:
+      linear-gradient(135deg,#ffd54f,#ff8a65);
+      position:relative;overflow:hidden;
+    }
+    .profile:before,.profile:after{
+      content:"";position:absolute;background:#111;border-radius:50%;
+    }
+    .profile:before{width:6px;height:6px;left:6px;top:7px;box-shadow:10px 0 0 #111}
+    .profile:after{width:16px;height:7px;left:6px;bottom:5px;border-radius:0 0 12px 12px}
+
+    .hero{
+      position:absolute;top:82px;left:0;right:0;height:53%;
+      padding:74px 18px 22px;
+      display:flex;flex-direction:column;justify-content:flex-end;
+      background:
+        linear-gradient(180deg,rgba(0,0,0,.03),rgba(0,0,0,.1) 44%,rgba(0,0,0,.94)),
+        radial-gradient(circle at 55% 32%,rgba(229,9,20,.32),transparent 34%);
+      z-index:5;
+    }
+    .hero-kicker{
+      font-size:11px;letter-spacing:2.2px;font-weight:800;color:#ddd;margin-bottom:7px;
+    }
+    .hero-title{
+      font-size:clamp(34px,9vw,47px);line-height:.94;font-weight:950;letter-spacing:-2.2px;
+      max-width:420px;text-shadow:0 3px 16px rgba(0,0,0,.7);
+    }
+    .hero-sub{
+      margin-top:10px;font-size:13px;color:#ddd;font-weight:600;
+    }
+    .match{color:var(--green);font-weight:800;margin-right:7px}
+    .hero-copy{
+      margin-top:8px;color:#ddd;font-size:14px;line-height:1.32;max-width:430px;
+    }
+    .buttons{display:flex;gap:10px;margin-top:12px}
+    .btn{
+      border:0;border-radius:5px;padding:9px 14px;font-size:14px;font-weight:800;
+      display:flex;align-items:center;gap:7px;
+    }
+    .btn.play{background:#fff;color:#111}
+    .btn.info{background:rgba(109,109,110,.72);color:#fff}
+
+    .content{
+      position:absolute;left:0;right:0;bottom:0;height:39%;
+      padding:20px 0 72px 16px;
+      background:linear-gradient(180deg,rgba(5,5,5,.15),#050505 15%);
+      z-index:7;
+    }
+    .row-title{
+      font-size:18px;font-weight:800;margin:0 0 12px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:16px;
+    }
+    .viewport{
+      width:100%;overflow:hidden;
+    }
+    .cards{
+      display:flex;gap:12px;padding-right:18px;
+      will-change:transform;
+      transform:translateX(0);
+      transition:transform .95s cubic-bezier(.2,.8,.2,1);
+    }
+    .card{
+      flex:0 0 calc(78% - 10px);
+      height:142px;border-radius:8px;overflow:hidden;position:relative;
+      box-shadow:0 6px 18px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(135deg,#2c2c2c,#111);
+    }
+    .card:nth-child(1){background:linear-gradient(135deg,#6b1731,#1a0d12)}
+    .card:nth-child(2){background:linear-gradient(135deg,#604215,#181208)}
+    .card:nth-child(3){background:linear-gradient(135deg,#183f64,#08131d)}
+    .card:nth-child(4){background:linear-gradient(135deg,#4e2467,#13091b)}
+    .card:after{
+      content:"";position:absolute;inset:auto 0 0;height:70%;
+      background:linear-gradient(180deg,transparent,rgba(0,0,0,.94));
+    }
+    .card-top{
+      position:absolute;top:9px;left:10px;font-size:10px;font-weight:900;
+      letter-spacing:1.2px;color:#f5f5f5;z-index:2;
+    }
+    .card-title{
+      position:absolute;left:11px;right:10px;bottom:28px;z-index:3;
+      font-size:19px;line-height:1.04;font-weight:900;letter-spacing:-.45px;
+    }
+    .card-city{
+      position:absolute;left:11px;bottom:12px;z-index:3;font-size:11px;color:#d6d6d6;
+    }
+    .progress{
+      position:absolute;left:10px;right:10px;bottom:5px;height:2px;background:#555;z-index:3;
+    }
+    .progress span{display:block;height:100%;background:var(--red)}
+
+    .modal-backdrop{
+      position:absolute;inset:0;background:rgba(0,0,0,.76);z-index:40;
+      display:flex;align-items:center;justify-content:center;padding:26px;
+      opacity:0;pointer-events:none;transition:opacity .45s ease;
+    }
+    .modal-backdrop.show{opacity:1;pointer-events:auto}
+    .modal{
+      width:min(390px,100%);background:#181818;border-radius:12px;padding:24px;
+      box-shadow:0 22px 70px rgba(0,0,0,.7);transform:scale(.94);
+      transition:transform .45s cubic-bezier(.2,.8,.2,1);
+    }
+    .modal-backdrop.show .modal{transform:scale(1)}
+    .modal h2{font-size:28px;line-height:1.05;margin:0 0 8px;letter-spacing:-.8px}
+    .modal p{margin:0 0 18px;color:#d0d0d0;font-size:15px;line-height:1.4}
+    .choice{
+      width:100%;border-radius:6px;padding:13px 14px;margin-top:10px;
+      font-size:16px;font-weight:850;text-align:left;border:2px solid transparent;
+      transition:.28s ease;
+    }
+    .choice.argue{background:#2a2a2a;color:#fff}
+    .choice.book{background:#fff;color:#111}
+    .choice.focused{
+      border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.18);
+      transform:scale(1.015);
+    }
+    .choice.book.focused{border-color:var(--red);box-shadow:0 0 0 3px rgba(229,9,20,.25)}
+
+    .reveal{
+      position:absolute;inset:0;background:
+        radial-gradient(circle at 50% 24%,rgba(229,9,20,.28),transparent 30%),
+        linear-gradient(180deg,#080808,#000);
+      z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:30px;text-align:center;opacity:0;pointer-events:none;transition:opacity .5s ease;
+    }
+    .reveal.show{opacity:1;pointer-events:auto}
+    .reveal-logo{font-size:14px;letter-spacing:3px;color:#cfcfcf;font-weight:800;margin-bottom:12px}
+    .reveal h1{font-size:42px;line-height:.96;margin:0 0 14px;letter-spacing:-1.8px}
+    .reveal .deal{font-size:29px;font-weight:950;color:#fff}
+    .reveal .code{
+      margin:14px 0 18px;padding:11px 20px;border:2px solid var(--red);border-radius:6px;
+      font-size:22px;font-weight:950;letter-spacing:.6px;background:#120304;
+    }
+    .locations{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:430px}
+    .loc{
+      background:#171717;border:1px solid #2b2b2b;border-radius:9px;padding:12px 10px;
+      text-align:left;opacity:0;transform:translateY(12px);
+    }
+    .loc.show{animation:rise .36s ease forwards}
+    .loc b{display:block;font-size:15px;line-height:1.1}
+    .loc span{display:block;color:#aaa;font-size:12px;margin-top:4px}
+    .joke{
+      margin-top:18px;color:#d8d8d8;font-size:15px;font-weight:700;
+      opacity:0;transform:translateY(10px);
+    }
+    .joke.show{animation:rise .4s ease forwards}
+    @keyframes rise{to{opacity:1;transform:translateY(0)}}
+
+    .controls{
+      position:absolute;right:12px;bottom:12px;display:flex;gap:8px;z-index:80;
+    }
+    .controls button{
+      border:0;border-radius:18px;padding:8px 12px;font-weight:800;font-size:13px;
+      background:#fff;color:#111;opacity:.9;
+    }
+    .start-overlay{
+      position:absolute;inset:0;background:rgba(0,0,0,.7);z-index:100;
+      display:flex;align-items:center;justify-content:center;padding:28px;
+    }
+    .start-card{
+      width:min(360px,100%);background:#fff;color:#111;border-radius:22px;padding:24px;text-align:center;
+    }
+    .start-card h2{margin:0 0 8px;font-size:24px}
+    .start-card p{margin:0 0 18px;color:#555;font-size:15px;line-height:1.4}
+    .start-card button{
+      border:0;background:var(--red);color:#fff;font-size:17px;font-weight:850;
+      padding:12px 22px;border-radius:24px;
+    }
+    .hint{font-size:12px;color:#777;margin-top:12px}
+
+    @media (max-height:760px){
+      .hero{height:55%;padding-top:56px}
+      .hero-title{font-size:36px}
+      .hero-copy{font-size:13px}
+      .content{height:37%;padding-top:14px}
+      .card{height:126px}
+    }
+    @media (min-width:521px){
+      body{padding:18px}
+      .phone{height:calc(100vh - 36px);border-radius:30px;box-shadow:0 10px 50px rgba(0,0,0,.55)}
+    }
+  </style>
+</head>
+<body>
+<main class="phone">
+
+  <div class="status">
+    <div id="clock">10:12</div>
+    <div class="status-right">
+      <svg width="19" height="13" viewBox="0 0 19 13" aria-hidden="true">
+        <rect x="0" y="8" width="3" height="5" rx="1" fill="#fff"/>
+        <rect x="5" y="6" width="3" height="7" rx="1" fill="#fff"/>
+        <rect x="10" y="3" width="3" height="10" rx="1" fill="#fff"/>
+        <rect x="15" y="0" width="3" height="13" rx="1" fill="#fff"/>
+      </svg>
+      <svg width="18" height="14" viewBox="0 0 20 15" aria-hidden="true">
+        <path d="M1.5 4.6C6.4.6 13.6.6 18.5 4.6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M4.8 8.1c3-2.4 7.4-2.4 10.4 0" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M8 11.3c1.2-.9 2.8-.9 4 0" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="10" cy="13.2" r="1.25" fill="#fff"/>
+      </svg>
+      <svg width="27" height="13" viewBox="0 0 30 14" aria-hidden="true">
+        <rect x="1" y="1" width="25" height="12" rx="3" fill="none" stroke="#fff" stroke-width="1.4"/>
+        <rect x="3" y="3" width="17" height="8" rx="1.8" fill="#fff"/>
+        <rect x="27" y="4.2" width="2" height="5.6" rx="1" fill="#fff"/>
+      </svg>
+    </div>
+  </div>
+
+  <section class="app">
+    <div class="topbar">
+      <div class="logo">NETFLIX</div>
+      <div class="profile"></div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-kicker">A NETFLIX ORIGINAL</div>
+      <div class="hero-title">TRYING TO PICK SOMETHING TO DO</div>
+      <div class="hero-sub"><span class="match">99% Match</span> 2026 &nbsp; 1 Season</div>
+      <div class="hero-copy">A group of friends enters its third hour of saying “I don’t care” while rejecting every suggestion.</div>
+      <div class="buttons">
+        <button class="btn play">▶ Play</button>
+        <button class="btn info">ⓘ More Info</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="row-title">Continue Watching for Everyone</div>
+      <div class="viewport">
+        <div id="cards" class="cards">
+          <div class="card">
+            <div class="card-top">EPISODE 1</div>
+            <div class="card-title">Big Screen Escapes</div>
+            <div class="card-city">Mt. Pocono</div>
+            <div class="progress"><span style="width:82%"></span></div>
+          </div>
+          <div class="card">
+            <div class="card-top">EPISODE 2</div>
+            <div class="card-title">Big Screen Escapes</div>
+            <div class="card-city">Tannersville</div>
+            <div class="progress"><span style="width:68%"></span></div>
+          </div>
+          <div class="card">
+            <div class="card-top">EPISODE 3</div>
+            <div class="card-title">Klues Escape Room</div>
+            <div class="card-city">Stroudsburg</div>
+            <div class="progress"><span style="width:57%"></span></div>
+          </div>
+          <div class="card">
+            <div class="card-top">EPISODE 4</div>
+            <div class="card-title">Nevermind Escape Rooms</div>
+            <div class="card-city">Scranton</div>
+            <div class="progress"><span style="width:91%"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="modal" class="modal-backdrop">
+    <div class="modal">
+      <h2>Are you still deciding what to do?</h2>
+      <p>You’ve been scrolling for 47 minutes. Everyone has now said “whatever you guys want” at least twice.</p>
+      <button id="argueBtn" class="choice argue focused">Keep Arguing</button>
+      <button id="bookBtn" class="choice book">Book an Escape Room</button>
+    </div>
+  </div>
+
+  <div id="reveal" class="reveal">
+    <div class="reveal-logo">NORTHEAST PA’S PREMIER ESCAPE ROOMS</div>
+    <h1>WEEKEND PLANS<br>SOLVED.</h1>
+    <div class="deal">15% OFF THIS WEEKEND</div>
+    <div class="code">FLASH15</div>
+
+    <div class="locations">
+      <div class="loc"><b>Big Screen Escapes</b><span>Mt. Pocono</span></div>
+      <div class="loc"><b>Big Screen Escapes</b><span>Tannersville</span></div>
+      <div class="loc"><b>Klues Escape Room</b><span>Stroudsburg</span></div>
+      <div class="loc"><b>Nevermind Escape Rooms</b><span>Scranton</span></div>
+    </div>
+
+    <div class="joke">Finally—a suggestion nobody rejected.</div>
+  </div>
+
+  <div class="controls">
+    <button id="replayBtn">Replay</button>
+    <button id="hideBtn">Hide controls</button>
+  </div>
+
+  <div id="startOverlay" class="start-overlay">
+    <div class="start-card">
+      <h2>Netflix-Style Promo Simulator</h2>
+      <p>Tap start and screen-record. All four locations now scroll fully into view before the popup appears.</p>
+      <button id="startBtn">Start</button>
+      <div class="hint">Hide controls before recording. Double-tap to bring them back.</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  const cards = document.getElementById("cards");
+  const cardEls = [...document.querySelectorAll(".card")];
+  const modal = document.getElementById("modal");
+  const argueBtn = document.getElementById("argueBtn");
+  const bookBtn = document.getElementById("bookBtn");
+  const reveal = document.getElementById("reveal");
+  const locs = [...document.querySelectorAll(".loc")];
+  const joke = document.querySelector(".joke");
+  const controls = document.querySelector(".controls");
+  const overlay = document.getElementById("startOverlay");
+
+  function updateClock(){
+    const d = new Date();
+    let h = d.getHours();
+    const m = String(d.getMinutes()).padStart(2,"0");
+    h = h % 12 || 12;
+    document.getElementById("clock").textContent = `${h}:${m}`;
+  }
+  updateClock();
+
+  function reset(){
+    cards.style.transform = "translateX(0px)";
+    modal.classList.remove("show");
+    argueBtn.classList.add("focused");
+    bookBtn.classList.remove("focused");
+    reveal.classList.remove("show");
+    locs.forEach(x => x.classList.remove("show"));
+    joke.classList.remove("show");
+  }
+
+  function cardOffset(index){
+    const cardWidth = cardEls[0].getBoundingClientRect().width;
+    const gap = 12;
+    return index * (cardWidth + gap);
+  }
+
+  let playing = false;
+
+  async function play(){
+    if(playing) return;
+    playing = true;
+    reset();
+
+    await sleep(1000);
+
+    for(let i = 1; i < cardEls.length; i++){
+      cards.style.transform = `translateX(-${cardOffset(i)}px)`;
+      await sleep(1200);
+    }
+
+    await sleep(700);
+    modal.classList.add("show");
+
+    await sleep(1300);
+    argueBtn.classList.remove("focused");
+    bookBtn.classList.add("focused");
+
+    await sleep(1000);
+    bookBtn.style.transform = "scale(.97)";
+    await sleep(170);
+    bookBtn.style.transform = "";
+
+    await sleep(250);
+    modal.classList.remove("show");
+
+    await sleep(450);
+    reveal.classList.add("show");
+
+    for(const loc of locs){
+      await sleep(220);
+      loc.classList.add("show");
+    }
+
+    await sleep(450);
+    joke.classList.add("show");
+
+    playing = false;
+  }
+
+  document.getElementById("startBtn").addEventListener("click", async () => {
+    overlay.style.display = "none";
+    await play();
+  });
+
+  document.getElementById("replayBtn").addEventListener("click", play);
+  document.getElementById("hideBtn").addEventListener("click", () => controls.style.display = "none");
+  document.addEventListener("dblclick", () => controls.style.display = "flex");
+</script>
+</body>
+</html>
